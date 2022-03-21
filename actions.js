@@ -1,20 +1,28 @@
 const express = require('express');
 const router = express.Router();
+const bcryptjs = require('bcryptjs');
 
 let users = [];
 
-router.post('/register', (request,response) => {
+router.post('/register', async(request,response) => {
 
-    //const user_email = request.body.email;
-    //const user_password = request.body.password;
     const { email,password } = request.body;
+    const account = users.find(x => x.email == email);
+    if(account){
+        return response.status(200).json({
+            message: 'User exist please try other email'
+        });
+    } else {
 
-    users.push({email:email, password:password});
+        const hash_password = await bcryptjs.hash(password,10);
 
-    return response.status(200).json({
-        message: users
-    });
-
+        users.push({email:email, password:hash_password});
+        return response.status(200).json({
+            message: 'Account created',
+            users_count: users.length,
+            data: users
+        });
+    }
 })
 
 router.get('/greeting', (request,response) => {
